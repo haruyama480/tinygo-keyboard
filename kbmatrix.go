@@ -6,6 +6,14 @@ import (
 	"machine"
 )
 
+// Keep each driven line as an output and drive it low before the next select.
+// After it goes low, wait until the sense lines read idle. The diode blocks
+// discharge, so a pulldown fall otherwise looks like the next key on that line.
+const (
+	matrixIdleSpins = 2000
+	matrixIdleReads = 3
+)
+
 type MatrixKeyboard struct {
 	State    []State
 	Keys     [][]Keycode
@@ -23,13 +31,6 @@ func (d *Device) AddMatrixKeyboard(colPins, rowPins []machine.Pin, keys [][]Keyc
 	row := len(rowPins)
 	state := make([]State, row*col)
 	cycleCnt := make([]uint8, len(state))
-
-	for c := range colPins {
-		colPins[c].Configure(machine.PinConfig{Mode: machine.PinInputPulldown})
-	}
-	for r := range rowPins {
-		rowPins[r].Configure(machine.PinConfig{Mode: machine.PinInputPulldown})
-	}
 
 	o := Options{}
 	for _, f := range opt {
@@ -56,9 +57,30 @@ func (d *Device) AddMatrixKeyboard(colPins, rowPins []machine.Pin, keys [][]Keyc
 		cycleCounter: cycleCnt,
 		debounce:     8,
 	}
+	k.configurePins()
 
 	d.kb = append(d.kb, k)
 	return k
+}
+
+func (d *MatrixKeyboard) configurePins() {
+	if d.options.InvertDiode {
+		for _, p := range d.Col {
+			p.Configure(machine.PinConfig{Mode: machine.PinInputPulldown})
+		}
+		for _, p := range d.Row {
+			p.Configure(machine.PinConfig{Mode: machine.PinOutput})
+			p.Low()
+		}
+		return
+	}
+	for _, p := range d.Row {
+		p.Configure(machine.PinConfig{Mode: machine.PinInputPulldown})
+	}
+	for _, p := range d.Col {
+		p.Configure(machine.PinConfig{Mode: machine.PinOutput})
+		p.Low()
+	}
 }
 
 func (d *MatrixKeyboard) SetCallback(fn Callback) {
@@ -72,59 +94,92 @@ func (d *MatrixKeyboard) Callback(layer, index int, state State) {
 }
 
 func (d *MatrixKeyboard) Get() []State {
+	if d.options.InvertDiode {
+		d.scanRows()
+	} else {
+		d.scanCols()
+	}
+	return d.State
+}
+
+// scanCols drives one column high and reads every row, then drives that column low.
+func (d *MatrixKeyboard) scanCols() {
+	ncol := len(d.Col)
 	for c := range d.Col {
+		d.Col[c].High()
 		for r := range d.Row {
-			//d.State[r*len(d.Col)+c] = d.Row[r].Get()
-			current := false
-			if !d.options.InvertDiode {
-				d.Col[c].Configure(machine.PinConfig{Mode: machine.PinOutput})
-				d.Col[c].High()
-				current = d.Row[r].Get()
-			} else {
-				d.Row[r].Configure(machine.PinConfig{Mode: machine.PinOutput})
-				d.Row[r].High()
-				current = d.Col[c].Get()
-			}
-			idx := r*len(d.Col) + c
-			switch d.State[idx] {
-			case None:
-				if current {
-					if d.cycleCounter[idx] >= d.debounce {
-						d.State[idx] = NoneToPress
-						d.cycleCounter[idx] = 0
-					} else {
-						d.cycleCounter[idx]++
-					}
-				} else {
-					d.cycleCounter[idx] = 0
-				}
-			case NoneToPress:
-				d.State[idx] = Press
-			case Press:
-				if current {
-					d.cycleCounter[idx] = 0
-				} else {
-					if d.cycleCounter[idx] >= d.debounce {
-						d.State[idx] = PressToRelease
-						d.cycleCounter[idx] = 0
-					} else {
-						d.cycleCounter[idx]++
-					}
-				}
-			case PressToRelease:
-				d.State[idx] = None
-			}
-			if !d.options.InvertDiode {
-				d.Col[c].Low()
-				d.Col[c].Configure(machine.PinConfig{Mode: machine.PinInputPulldown})
-			} else {
-				d.Row[r].Low()
-				d.Row[r].Configure(machine.PinConfig{Mode: machine.PinInputPulldown})
+			d.step(r*ncol+c, d.Row[r].Get())
+		}
+		d.Col[c].Low()
+		d.waitIdle(d.Row)
+	}
+}
+
+// scanRows is the InvertDiode path: drive one row high and read every column.
+func (d *MatrixKeyboard) scanRows() {
+	ncol := len(d.Col)
+	for r := range d.Row {
+		d.Row[r].High()
+		for c := range d.Col {
+			d.step(r*ncol+c, d.Col[c].Get())
+		}
+		d.Row[r].Low()
+		d.waitIdle(d.Col)
+	}
+}
+
+// waitIdle spins until pins read low, or until matrixIdleSpins runs out.
+// A stuck line must not block the rest of the scan.
+func (d *MatrixKeyboard) waitIdle(pins []machine.Pin) {
+	idle := 0
+	for i := 0; i < matrixIdleSpins; i++ {
+		busy := false
+		for _, p := range pins {
+			if p.Get() {
+				busy = true
+				break
 			}
 		}
+		if busy {
+			idle = 0
+			continue
+		}
+		idle++
+		if idle == matrixIdleReads {
+			return
+		}
 	}
+}
 
-	return d.State
+func (d *MatrixKeyboard) step(idx int, current bool) {
+	switch d.State[idx] {
+	case None:
+		if current {
+			if d.cycleCounter[idx] >= d.debounce {
+				d.State[idx] = NoneToPress
+				d.cycleCounter[idx] = 0
+			} else {
+				d.cycleCounter[idx]++
+			}
+		} else {
+			d.cycleCounter[idx] = 0
+		}
+	case NoneToPress:
+		d.State[idx] = Press
+	case Press:
+		if current {
+			d.cycleCounter[idx] = 0
+		} else {
+			if d.cycleCounter[idx] >= d.debounce {
+				d.State[idx] = PressToRelease
+				d.cycleCounter[idx] = 0
+			} else {
+				d.cycleCounter[idx]++
+			}
+		}
+	case PressToRelease:
+		d.State[idx] = None
+	}
 }
 
 func (d *MatrixKeyboard) Key(layer, index int) Keycode {
@@ -152,5 +207,6 @@ func (d *MatrixKeyboard) GetKeyCount() int {
 }
 
 func (d *MatrixKeyboard) Init() error {
+	d.configurePins()
 	return nil
 }
