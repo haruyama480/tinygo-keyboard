@@ -44,14 +44,22 @@ const (
 	KeyLeftCtrl   = TypeNormal | 0xE0
 	KeyLeftShift  = TypeNormal | 0xE1
 	KeyLeftAlt    = TypeNormal | 0xE2
-	KeyWindows    = TypeNormal | 0xE3
+	KeyLeftGUI    = TypeNormal | 0xE3
 	KeyRightCtrl  = TypeNormal | 0xE4
 	KeyRightShift = TypeNormal | 0xE5
 	KeyRightAlt   = TypeNormal | 0xE6
+	KeyRightGUI   = TypeNormal | 0xE7
 
 	KeyH         = TypeNormal | 0x0B
 	KeyBackspace = TypeNormal | 0x2A
 )
+
+// KeyWindows is the HID Left GUI key, usage 0xE3.
+//
+// Deprecated: use [KeyLeftGUI].
+//
+//go:fix inline
+const KeyWindows = KeyLeftGUI
 
 const (
 	KeyMod0 = TypeModKey | 0x00

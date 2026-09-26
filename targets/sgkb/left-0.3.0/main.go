@@ -46,14 +46,14 @@ func run() error {
 			0, jp.KeyTab, jp.KeyQ, jp.KeyW, jp.KeyE, jp.KeyR, jp.KeyT, 0, 0, 0,
 			0, jp.KeyLeftCtrl, jp.KeyA, jp.KeyS, jp.KeyD, jp.KeyF, jp.KeyG, 0, 0, 0,
 			0, jp.KeyLeftShift, jp.KeyZ, jp.KeyX, jp.KeyC, jp.KeyV, jp.KeyB, 0, 0, 0,
-			jp.KeyMod1, jp.KeyLeftCtrl, jp.KeyWindows, jp.KeyLeftAlt, jp.KeyMod1, jp.KeySpace, 0, 0, 0,
+			jp.KeyMod1, jp.KeyLeftCtrl, jp.KeyLeftGUI, jp.KeyLeftAlt, jp.KeyMod1, jp.KeySpace, 0, 0, 0,
 		},
 		{
 			0, jp.KeyEsc, jp.KeyF1, jp.KeyF2, jp.KeyF3, jp.KeyF4, jp.KeyF5, jp.KeyF6, 0, 0,
 			0, jp.KeyTab, jp.KeyQ, jp.KeyF15, jp.KeyEnd, jp.KeyF17, jp.KeyF18, 0, 0, 0,
 			0, jp.KeyLeftCtrl, jp.KeyHome, jp.KeyS, jp.MouseRight, jp.MouseLeft, jp.MouseBack, 0, 0, 0,
 			0, jp.KeyLeftShift, jp.KeyF13, jp.KeyF14, jp.MouseMiddle, jp.KeyF16, jp.MouseForward, 0, 0, 0,
-			jp.KeyMod1, jp.KeyLeftCtrl, jp.KeyWindows, jp.KeyLeftAlt, jp.KeyMod1, jp.KeySpace, 0, 0, 0,
+			jp.KeyMod1, jp.KeyLeftCtrl, jp.KeyLeftGUI, jp.KeyLeftAlt, jp.KeyMod1, jp.KeySpace, 0, 0, 0,
 		},
 	})
 	dk.SetCallback(func(layer, index int, state keyboard.State) {

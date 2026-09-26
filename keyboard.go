@@ -409,7 +409,7 @@ func (d *Device) Tick() error {
 							pressToRelease = append(pressToRelease, uint32(0xFF000000)|uint32(keycodes.KeyLeftAlt))
 						}
 						if x&keycodes.TypeXGui > 0 {
-							pressToRelease = append(pressToRelease, uint32(0xFF000000)|uint32(keycodes.KeyWindows))
+							pressToRelease = append(pressToRelease, uint32(0xFF000000)|uint32(keycodes.KeyLeftGUI))
 						}
 					case keycodes.TypeRxxxT:
 						if x&keycodes.TypeXCtl > 0 {
@@ -422,7 +422,7 @@ func (d *Device) Tick() error {
 							pressToRelease = append(pressToRelease, uint32(0xFF000000)|uint32(keycodes.KeyLeftAlt))
 						}
 						if x&keycodes.TypeXGui > 0 {
-							pressToRelease = append(pressToRelease, uint32(0xFF000000)|uint32(keycodes.KeyWindows))
+							pressToRelease = append(pressToRelease, uint32(0xFF000000)|uint32(keycodes.KeyRightGUI))
 						}
 					}
 					delete(d.tapOrHold, xx)
@@ -459,7 +459,7 @@ func (d *Device) Tick() error {
 					noneToPress = append(noneToPress, uint32(0xFF000000)|uint32(keycodes.KeyLeftAlt))
 				}
 				if x&keycodes.TypeXGui > 0 {
-					noneToPress = append(noneToPress, uint32(0xFF000000)|uint32(keycodes.KeyWindows))
+					noneToPress = append(noneToPress, uint32(0xFF000000)|uint32(keycodes.KeyLeftGUI))
 				}
 			case keycodes.TypeRxxxT:
 				if x&keycodes.TypeXCtl > 0 {
@@ -472,7 +472,7 @@ func (d *Device) Tick() error {
 					noneToPress = append(noneToPress, uint32(0xFF000000)|uint32(keycodes.KeyLeftAlt))
 				}
 				if x&keycodes.TypeXGui > 0 {
-					noneToPress = append(noneToPress, uint32(0xFF000000)|uint32(keycodes.KeyWindows))
+					noneToPress = append(noneToPress, uint32(0xFF000000)|uint32(keycodes.KeyRightGUI))
 				}
 			}
 			d.tapOrHold[xx] = time.Time{}
@@ -509,7 +509,7 @@ func (d *Device) Tick() error {
 				d.Keyboard.Down(keycodes.KeyLeftAlt)
 			}
 			if x&keycodes.TypeXGui > 0 {
-				d.Keyboard.Down(keycodes.KeyWindows)
+				d.Keyboard.Down(keycodes.KeyLeftGUI)
 			}
 			d.Keyboard.Down(k.Keycode(x&0x00FF | keycodes.TypeNormal))
 		} else if x&keycodes.QuantumMask == keycodes.TypeRxxx && x&keycodes.QuantumTypeMask != 0 {
@@ -524,7 +524,7 @@ func (d *Device) Tick() error {
 				d.Keyboard.Down(keycodes.KeyLeftAlt)
 			}
 			if x&keycodes.TypeXGui > 0 {
-				d.Keyboard.Down(keycodes.KeyWindows)
+				d.Keyboard.Down(keycodes.KeyRightGUI)
 			}
 			d.Keyboard.Down(k.Keycode(x&0x00FF | keycodes.TypeNormal))
 		} else if x == keycodes.KeyRestoreDefaultKeymap {
@@ -615,7 +615,7 @@ func (d *Device) Tick() error {
 				d.Keyboard.Up(keycodes.KeyLeftAlt)
 			}
 			if x&keycodes.TypeXGui > 0 {
-				d.Keyboard.Up(keycodes.KeyWindows)
+				d.Keyboard.Up(keycodes.KeyLeftGUI)
 			}
 			d.Keyboard.Up(k.Keycode(x&0x00FF | keycodes.TypeNormal))
 		} else if x&keycodes.QuantumMask == keycodes.TypeRxxx && x&keycodes.QuantumTypeMask != 0 {
@@ -630,7 +630,7 @@ func (d *Device) Tick() error {
 				d.Keyboard.Up(keycodes.KeyLeftAlt)
 			}
 			if x&keycodes.TypeXGui > 0 {
-				d.Keyboard.Up(keycodes.KeyWindows)
+				d.Keyboard.Up(keycodes.KeyRightGUI)
 			}
 			d.Keyboard.Up(k.Keycode(x&0x00FF | keycodes.TypeNormal))
 		} else if x&0xF000 == 0xD000 {

@@ -132,11 +132,19 @@ const (
 	KeyLeftCtrl    = keycodes.TypeNormal | 0xE0
 	KeyLeftShift   = keycodes.TypeNormal | 0xE1
 	KeyLeftAlt     = keycodes.TypeNormal | 0xE2
-	KeyWindows     = keycodes.TypeNormal | 0xE3
+	KeyLeftGUI     = keycodes.TypeNormal | 0xE3
 	KeyRightCtrl   = keycodes.TypeNormal | 0xE4
 	KeyRightShift  = keycodes.TypeNormal | 0xE5
 	KeyRightAlt    = keycodes.TypeNormal | 0xE6
+	KeyRightGUI    = keycodes.TypeNormal | 0xE7
 )
+
+// KeyWindows is the HID Left GUI key, usage 0xE3.
+//
+// Deprecated: use [KeyLeftGUI].
+//
+//go:fix inline
+const KeyWindows = KeyLeftGUI
 
 const (
 	KeyMediaBrightnessUp   = keycodes.KeyMediaBrightnessUp
