@@ -949,7 +949,11 @@ func hidKey(c k.Keycode) k.Keycode {
 	if u < 0xE0 || u > 0xE7 {
 		return c
 	}
-	return k.Keycode(0xE000 | (1 << (u - 0xE0)))
+	// One bit of the modifier byte. 0xE000 selects that byte in TinyGo.
+	// usage 0xE3 -> 0xE000|0b00001000 = 0xE008 (left GUI, bit 3)
+	// usage 0xE7 -> 0xE000|0b10000000 = 0xE080 (right GUI, bit 7)
+	bit := k.Keycode(1 << (u - 0xE0))
+	return 0xE000 | bit
 }
 
 func (k *Keyboard) Up(c k.Keycode) error {
