@@ -45,7 +45,6 @@ const (
 	KeyLeftShift  = TypeNormal | 0xE1
 	KeyLeftAlt    = TypeNormal | 0xE2
 	KeyWindows    = TypeNormal | 0xE3
-	KeyRightGUI   = TypeNormal | 0xE7
 	KeyRightCtrl  = TypeNormal | 0xE4
 	KeyRightShift = TypeNormal | 0xE5
 	KeyRightAlt   = TypeNormal | 0xE6

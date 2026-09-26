@@ -422,7 +422,7 @@ func (d *Device) Tick() error {
 							pressToRelease = append(pressToRelease, uint32(0xFF000000)|uint32(keycodes.KeyLeftAlt))
 						}
 						if x&keycodes.TypeXGui > 0 {
-							pressToRelease = append(pressToRelease, uint32(0xFF000000)|uint32(keycodes.KeyRightGUI))
+							pressToRelease = append(pressToRelease, uint32(0xFF000000)|uint32(keycodes.KeyWindows))
 						}
 					}
 					delete(d.tapOrHold, xx)
@@ -472,7 +472,7 @@ func (d *Device) Tick() error {
 					noneToPress = append(noneToPress, uint32(0xFF000000)|uint32(keycodes.KeyLeftAlt))
 				}
 				if x&keycodes.TypeXGui > 0 {
-					noneToPress = append(noneToPress, uint32(0xFF000000)|uint32(keycodes.KeyRightGUI))
+					noneToPress = append(noneToPress, uint32(0xFF000000)|uint32(keycodes.KeyWindows))
 				}
 			}
 			d.tapOrHold[xx] = time.Time{}
@@ -524,7 +524,7 @@ func (d *Device) Tick() error {
 				d.Keyboard.Down(keycodes.KeyLeftAlt)
 			}
 			if x&keycodes.TypeXGui > 0 {
-				d.Keyboard.Down(keycodes.KeyRightGUI)
+				d.Keyboard.Down(keycodes.KeyWindows)
 			}
 			d.Keyboard.Down(k.Keycode(x&0x00FF | keycodes.TypeNormal))
 		} else if x == keycodes.KeyRestoreDefaultKeymap {
@@ -630,7 +630,7 @@ func (d *Device) Tick() error {
 				d.Keyboard.Up(keycodes.KeyLeftAlt)
 			}
 			if x&keycodes.TypeXGui > 0 {
-				d.Keyboard.Up(keycodes.KeyRightGUI)
+				d.Keyboard.Up(keycodes.KeyWindows)
 			}
 			d.Keyboard.Up(k.Keycode(x&0x00FF | keycodes.TypeNormal))
 		} else if x&0xF000 == 0xD000 {
@@ -938,34 +938,16 @@ type Keyboard struct {
 	overrideCtrlH bool
 }
 
-// hidKey puts modifier usages 0xE0-0xE7 in the report modifier byte.
-// macOS and Karabiner tell left and right Command apart from those bits.
-// The same usage in the 6-key array is one Command.
-func hidKey(c k.Keycode) k.Keycode {
-	if c&0xFF00 != keycodes.TypeNormal {
-		return c
-	}
-	u := byte(c)
-	if u < 0xE0 || u > 0xE7 {
-		return c
-	}
-	// One bit of the modifier byte. 0xE000 selects that byte in TinyGo.
-	// usage 0xE3 -> 0xE000|0b00001000 = 0xE008 (left GUI, bit 3)
-	// usage 0xE7 -> 0xE000|0b10000000 = 0xE080 (right GUI, bit 7)
-	bit := k.Keycode(1 << (u - 0xE0))
-	return 0xE000 | bit
-}
-
 func (k *Keyboard) Up(c k.Keycode) error {
 	if len(k.override) > 0 {
 		for _, p := range k.override {
-			k.Port.Up(hidKey(p))
+			k.Port.Up(p)
 		}
 		k.override = k.override[:0]
 		for _, p := range k.pressed {
 			// When overriding, do not press the last key again
 			if c != p && p != k.pressed[len(k.pressed)-1] {
-				k.Port.Down(hidKey(p))
+				k.Port.Down(p)
 			}
 		}
 	}
@@ -973,7 +955,7 @@ func (k *Keyboard) Up(c k.Keycode) error {
 	for i, p := range k.pressed {
 		if c == p {
 			k.pressed = append(k.pressed[:i], k.pressed[i+1:]...)
-			return k.Port.Up(hidKey(c))
+			return k.Port.Up(c)
 		}
 	}
 	return nil
@@ -991,21 +973,21 @@ func (k *Keyboard) Down(c k.Keycode) error {
 
 		if k.overrideCtrlH && len(k.pressed) == 2 && k.pressed[0] == keycodes.KeyLeftCtrl && k.pressed[1] == keycodes.KeyH {
 			for _, p := range k.pressed {
-				k.Port.Up(hidKey(p))
+				k.Port.Up(p)
 			}
 			k.override = append(k.override, keycodes.KeyBackspace)
-			return k.Port.Down(hidKey(keycodes.KeyBackspace))
+			return k.Port.Down(keycodes.KeyBackspace)
 		} else {
 			if len(k.override) > 0 {
 				for _, p := range k.override {
-					k.Port.Up(hidKey(p))
+					k.Port.Up(p)
 				}
 				k.override = k.override[:0]
 				for _, p := range k.pressed {
-					k.Port.Down(hidKey(p))
+					k.Port.Down(p)
 				}
 			}
-			return k.Port.Down(hidKey(c))
+			return k.Port.Down(c)
 		}
 	}
 	return nil
