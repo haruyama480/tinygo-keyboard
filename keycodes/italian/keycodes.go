@@ -126,6 +126,7 @@ const (
 	KeyLeftShift   = keycodes.TypeNormal | 0xE1
 	KeyLeftAlt     = keycodes.TypeNormal | 0xE2
 	KeyWindows     = keycodes.TypeNormal | 0xE3
+	KeyRightGUI    = keycodes.TypeNormal | 0xE7
 	KeyRightCtrl   = keycodes.TypeNormal | 0xE4
 	KeyRightShift  = keycodes.TypeNormal | 0xE5
 	KeyRightAlt    = keycodes.TypeNormal | 0xE6
